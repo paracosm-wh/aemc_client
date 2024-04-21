@@ -71,7 +71,7 @@ AEMC_I::AEMC_I(int CodeLength, int classBit) {
 
 // TODO 生成codewords
 void AEMC_I::GenCodewords() {
-    Codewords = {120, 106, 102, 116};
+    Codewords = {120, 106, 102, 116, 114};
 //    Codewords = {162, 116};
 }
 
@@ -209,8 +209,8 @@ void RawMarker::AEMC_I_Decoding(int class_indices, std::vector<int> &cluster_ind
                 auto cross_c = c_0[0] * c_1[1] - c_1[0] * c_0[1];
 
                 if (cross_c < 0) {
-                cluster_order.first.push_back(chord.second[0]);
-                cluster_order.first.push_back(chord.second[1]);
+                    cluster_order.first.push_back(chord.second[0]);
+                    cluster_order.first.push_back(chord.second[1]);
                 } else {
                     cluster_order.first.push_back(chord.second[1]);
                     cluster_order.first.push_back(chord.second[0]);
@@ -236,16 +236,25 @@ void RawMarker::AEMC_I_Decoding(int class_indices, std::vector<int> &cluster_ind
 //                    std::vector<double> t_1 = {p2[0] - c.center[0], p2[1] - c.center[1]};
 //                    auto cross_t = t_0[0] * t_1[1] - t_1[0] * t_0[1];
 //                    if (cross_t > 0) {
-                    cluster_order.second.push_back(base_flag + x);
+//                    cluster_order.second.push_back(base_flag + x);
+                    if ((base_flag + x) > 6) {
+//                        cluster_order.second.push_back(6);
+
+                    } else {
+                        cluster_order.second.push_back(base_flag + x);
+                    }
                 }
             }
 
         }
     }
+
     int decode_flag = 0;
     int codeword = 0;
+
     for (int &p: cluster_order.second) {
         codeword += pow(2, CodedLENGTH - 1 - p);
+        cout << "," << p << ",";
     }
 
     for (int i = 0; i < CodedLENGTH; ++i) {
@@ -308,6 +317,7 @@ void RawMarker::AEMC_I_Decoding(int class_indices, std::vector<int> &cluster_ind
         codedCluster->chords = measured_chords;
 //        std::cout << "I:" << codedCluster->id << " : " << codedCluster->Confidence << " / ";
     } else {
+        cout << "Decode failed!" << codeword;
         codedCluster->Coded_flag = false;
         int row_i = 0;
         codedCluster->Points_.resize(cluster_indices.size(), 3);
@@ -1439,6 +1449,37 @@ Circle FitCircle(Eigen::MatrixX3d &pts) {
     c1.radius = static_cast<float> (radius / num);
     c1.center = C.segment(0, 3);
     return c1;
+}
+
+Eigen::Vector3f CircleFitting(Eigen::MatrixX3f points) {
+    auto num = points.rows();
+    Eigen::MatrixXf L1 = Eigen::MatrixXf::Ones(num, 1);
+    Eigen::Vector3f A = (points.transpose() * points).inverse() * points.transpose() * L1;
+
+    Eigen::MatrixXf B = Eigen::MatrixXf::Zero(num - 1, 3);
+    for (int i = 0; i < num - 1; i++) {
+        B.row(i) = points.row(i + 1) - points.row(i);
+    }
+    Eigen::MatrixXf L2 = Eigen::MatrixXf::Zero(num - 1, 1);
+    for (int i = 0; i < num - 1; i++) {
+        L2(i) = (points(i + 1, 0) * points(i + 1, 0) + points(i + 1, 1) * points(i + 1, 1) +
+                 points(i + 1, 2) * points(i + 1, 2)
+                 - (points(i, 0) * points(i, 0) + points(i, 1) * points(i, 1) + points(i, 2) * points(i, 2))) / 2.0;
+    }
+    Eigen::Matrix4f D;
+    D.setZero();
+    D.block<3, 3>(0, 0) = B.transpose() * B;
+    D.block<3, 1>(0, 3) = A;
+    D.block<1, 3>(3, 0) = A.transpose();
+    Eigen::Vector4f L3((B.transpose() * L2)(0), (B.transpose() * L2)(1), (B.transpose() * L2)(2), 1);
+    Eigen::Vector4f C = D.inverse() * L3;
+    float radius = 0;
+    for (int i = 0; i < num; i++) {
+        Eigen::Vector3f tmp(points.row(i)(0) - C(0), points.row(i)(1) - C(1), points.row(i)(2) - C(2));
+        radius = radius + sqrt(tmp(0) * tmp(0) + tmp(1) * tmp(1) + tmp(2) * tmp(2));
+    }
+    return C.segment(0, 3);
+
 }
 
 /* Hungarian algorithm

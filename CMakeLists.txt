@@ -23,13 +23,35 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(nav_msgs REQUIRED)
 
-include_directories(include)
+include_directories(
+        include
+        ${Eigen3_INCLUDE_DIRS}
+)
 link_directories(lib)
+
+set(dependencies
+        rclcpp
+        tf2
+        tf2_ros
+        std_msgs
+        visualization_msgs
+        nav_msgs
+        aemc_msgs)
+
+add_library(aemc_client SHARED
+        src/Aemc.cpp
+        src/visualization.cpp
+        src/Pointset_matching.cpp
+)
+
+ament_target_dependencies(aemc_client ${dependencies})
 
 add_executable(aemc_client_node src/aemc_client_node.cpp src/Aemc.cpp)
 add_executable(test_node src/test.cpp src/Aemc.cpp include/hungarian_algorithm/Hungarian.cpp)
 add_executable(visualization_node src/visualization.cpp src/Aemc.cpp)
 add_executable(sub_node src/sub.cpp)
+add_executable(matching src/matching.cpp src/Pointset_matching.cpp src/Aemc.cpp include/hungarian_algorithm/Hungarian.cpp)
+
 ament_target_dependencies(aemc_client_node rclcpp std_msgs geometry_msgs aemc_msgs)
 target_link_libraries(aemc_client_node seeker_sdk pthread)
 ament_target_dependencies(visualization_node rclcpp std_msgs geometry_msgs visualization_msgs nav_msgs aemc_msgs tf2 tf2_ros)
@@ -45,3 +67,4 @@ install(TARGETS
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
+

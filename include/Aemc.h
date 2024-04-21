@@ -15,9 +15,9 @@ using namespace Eigen;
 using namespace std;
 
 //const vector<float> classArr{17.29, 42.0, 50.0, 28.0, 39.0, 43.0};
-const vector<float> classArr{17.29, 0.0, 0.0, 35, 39.0};
-const float stand_deviation = 2.5;
-const float ERR = 2 * stand_deviation;
+const vector<float> classArr{17.29, 0.0, 0.0, 35, 39.0, 43.0};
+const float stand_deviation = 1.5;
+const float ERR = 3 * stand_deviation;
 const int MinClusterNum = 3;
 const int CodedLENGTH = 7;
 
@@ -274,5 +274,7 @@ int cyclicShift(int value, int d, int N);
 int HammingDistance(int x, int y);
 
 Circle FitCircle(Eigen::MatrixX3d &pts);
+
+Eigen::Vector3f CircleFitting(Eigen::MatrixX3f points);
 
 #endif //AEMC_CLIENT_AEMC_H

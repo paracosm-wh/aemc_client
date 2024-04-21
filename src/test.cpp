@@ -626,7 +626,7 @@ private:
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    std::string path = R"(/home/itr-wh/Work/Ros2_ws/src/aemc_client/src/0314 dog/s-4-middle1-raw.csv)";
+    std::string path = R"(/home/itr-wh/Work/AEMC_data/RAL-data/1-L-middle1-raw.csv)";
 //    std::string path = R"(/home/itr-wh/Work/AEMC_data/ICRA_data/Cluster-2.csv)";
     auto visual_node = std::make_shared<rclcpp::Node>("mocap_node");
     AemcRos visualNode(visual_node);
@@ -634,7 +634,8 @@ int main(int argc, char *argv[]) {
     std::string line;
 
     std::ofstream outfile;
-    outfile.open("./s-4-middle1-raw-result.csv", std::ios::out | std::ios::trunc);
+    outfile.open("/home/itr-wh/Work/AEMC_data/RAL-data/result/L-middle1-raw-result_pre.csv",
+                 std::ios::out | std::ios::trunc);
     if (!csv_data.is_open()) {
         std::cout << "Error: opening file fail" << std::endl;
         std::exit(1);
@@ -877,7 +878,7 @@ int main(int argc, char *argv[]) {
 
                 bool flag4 = false;
                 for (auto c: codedClusterList) {
-                    if (c.id == "4-0") {
+                    if (c.id == "5-0" || c.id == "5-4") {
 //                        outfile << c.Position[0] << ','
 //                                << c.Position[1] << ','
 //                                << c.Position[2] << ',';
@@ -911,7 +912,7 @@ int main(int argc, char *argv[]) {
 
                 bool flag5 = false;
                 for (auto c: codedClusterList) {
-                    if (c.id == "4-1") {
+                    if (c.id == "5-1") {
 //                        outfile << c.Position[0] << ','
 //                                << c.Position[1] << ','
 //                                << c.Position[2] << ',';
@@ -945,7 +946,7 @@ int main(int argc, char *argv[]) {
 
                 bool flag6 = false;
                 for (auto c: codedClusterList) {
-                    if (c.id == "4-2") {
+                    if (c.id == "5-2") {
 //                        outfile << c.Position[0] << ','
 //                                << c.Position[1] << ','
 //                                << c.Position[2] << ',';
@@ -981,7 +982,7 @@ int main(int argc, char *argv[]) {
 
                 bool flag7 = false;
                 for (auto c: codedClusterList) {
-                    if (c.id == "4-3") {
+                    if (c.id == "5-3") {
 //                        outfile << c.Position[0] << ','
 //                                << c.Position[1] << ','
 //                                << c.Position[2] << ',';
