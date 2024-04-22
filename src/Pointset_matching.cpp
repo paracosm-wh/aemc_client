@@ -85,4 +85,8 @@ float PointsetMatching::KernelCorrelation(Eigen::MatrixX3f &pointset1, Eigen::Ma
 
 /*
  * 将原始模板绕法向量旋转theta角下的最佳匹配,后将匹配结果与原始点集进行一一对应
+ * 输入:原始模板std::vector<Eigen::MatrixX3f>, 原始点集Eigen::MatrixX3f
+ * 输出:最佳匹配对象索引,theta,最小代价,匹配对应结果Eigen::MatrixX3f
  */
+
+
