@@ -1,6 +1,14 @@
 from pycpd import RigidRegistration
 import numpy as np
 
+
+def ch(a):
+    a = np.vstack((a, [1, 2, 3]))
+    return a
+A = np.zeros((0, 3))
+A =ch(A)
+print(A)
+
 # create 2D target points (you can get these from any source you desire)
 # creating a square w/ 2 additional points. 
 target = np.array([[0, 0], [0, 1], [1, 0], [1, 1], [0.5, 0], [0, 0.5]])
@@ -21,7 +29,7 @@ reg = RigidRegistration(X=target, Y=source)
 # run the registration & collect the results
 TY, (s_reg, R_reg, t_reg) = reg.register()
 
-print(TY, '\n',translation,'\n',reg.diff)
+print(TY, '\n', translation, '\n', reg.diff)
 # TY is the transformed source points
 # the values in () are the registration parameters.
 # In this case of rigid registration they are:

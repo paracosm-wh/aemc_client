@@ -1,3 +1,6 @@
 /cmake-build-debug
 /include/Eigen
 /.idea
+/script/.idea
+/script/.pytest_cache
+/script/__pycache__
