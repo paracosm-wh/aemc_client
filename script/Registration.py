@@ -8,6 +8,7 @@ import math
 import csv
 
 from icp import *
+from Register import *
 
 Length = 7
 ClassArray = [17.29, 0.0, 0.0, 35, 39.0, 43.0]
@@ -110,34 +111,6 @@ class FrameData(object):
         return flag_num > 0, points_seed_queue
 
 
-def FittingCircle(points):
-    """
-    使用最小二乘法拟合三维点的圆心和半径
-    """
-    # 三维点的个数
-    num = points.shape[0]
-    L1 = np.ones((num, 1))
-    A = np.linalg.inv(points.T @ points) @ points.T @ L1
-
-    B = np.zeros((num - 1, 3))
-    for i in range(num - 1):
-        B[i, :] = points[i + 1, :] - points[i, :]
-
-    L2 = np.zeros((num - 1, 1))
-    for i in range(num - 1):
-        L2[i] = (np.sum(points[i + 1, :] ** 2) - np.sum(points[i, :] ** 2)) / 2
-
-    D = np.zeros((4, 4))
-    D[:3, :3] = B.T @ B
-    D[:3, 3] = A.squeeze()
-    D[3, :3] = A.T.squeeze()
-    D[3, 3] = 1
-
-    L3 = np.concatenate([B.T @ L2, np.array([[1]])])
-    C = np.linalg.solve(D, L3)
-    return C[:3]
-
-
 def visualize(X, Y, ax):
     """
         Visualize the registration process for cpd.
@@ -153,11 +126,6 @@ def visualize(X, Y, ax):
     ax.legend(loc='upper left', fontsize='x-large')
     plt.draw()
     plt.pause(1)
-
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -199,17 +167,17 @@ if __name__ == '__main__':
             print(frame_id)
             for cluster in frame_data.PotentialCluster:
                 cluster = np.array(cluster)
-                cost = np.inf
+                cost = - np.inf
                 reg_result = np.zeros((0, 3))
                 best_index = 0
                 fig = plt.figure()
                 ax = fig.add_subplot(111, projection='3d')
                 for i in range(len(templates)):
                     # ---------for cpd registration---------
+                    '''
                     # debug 中添加绘图
-                    # '''
                     # callback = partial(visualize, ax=ax)
-                    reg = RigidRegistration(X=templates[i], Y=cluster,)
+                    reg = RigidRegistration(X=templates[i], Y=cluster, )
                     # reg = RigidRegistration(X=templates[i], Y=cluster)
                     reg.register()
                     # plt.show()
@@ -220,7 +188,7 @@ if __name__ == '__main__':
                         best_index = i
                     np.set_printoptions(precision=2, suppress=True)
                     print(reg_result)
-                    # '''
+                    '''
                     '''
                     # ---------for icp registration---------
                     R, t, rmse = IterativeClosestPoint(source_pts=cluster.T, target_pts=templates[i].T, tau=1e-13)
@@ -230,10 +198,27 @@ if __name__ == '__main__':
                         reg_result = ApplyTransformation(cluster.T, R, t).T
                         best_index = i
                     '''
+                    '''
+                    # ---------for kernel correlation---------
+                    shift, correlation = kernel_correlation(templates[i], cluster)
+                    print('i:', i, 'correlation:', correlation)
+                    if correlation > cost:
+                        cost = correlation
+                        reg_result = cluster
+                        best_index = i
+                    '''
+                    # ---------for SVD2Wahba---------
+                    re, source_mean, R, c = SVD2Wahba(cluster, templates[i])
+                    print('i:', i, 'cost:', c)
+                    if c < cost:
+                        cost = c
+                        reg_result = re
+                        best_index = i
+
                 # 保存结果
                 # 保存拟合的圆心到result
                 print('Best index:', best_index)
-                C = FittingCircle(cluster)
+                C, r = FittingCircle(cluster)
                 print(C.flatten(), '\n')
                 # 根据所匹配的最佳模板的索引，将结果保存到最后一行的特定的列
                 result.loc[-1, (3 * best_index + 1):(3 * best_index + 4)] = C.flatten()
