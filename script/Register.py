@@ -5,6 +5,7 @@ from scipy.optimize import minimize
 from numpy.linalg import lstsq
 
 
+# TODO 各种配准方法的实现
 def kernel_correlation(target, source, gamma=None):
     """
     Compute the kernel correlation between two point sets X and Y.
@@ -52,25 +53,27 @@ def SVD2Wahba(source_points, target_points):
     使用SVD分解求解
     """
     # 拟合的圆心作为质心
-    source_mean = FittingCircle(source_points)[0]
-
+    source_mean = Points3Fitting(source_points[:3])[1]
+    # print(source_points.shape())
     # 中心化
     source_centered = source_points - source_mean
 
     # 计算协方差矩阵
-    H = np.dot(source_centered.T, target_points)
+    H = np.dot(target_points.T, source_centered)
 
     # 使用SVD分解计算旋转矩阵
     U, _, Vt = np.linalg.svd(H)
 
     # 计算旋转矩阵
-    R = np.dot(Vt.T, U.T)
-
+    R = np.dot(U, Vt)
+    if np.linalg.det(R) < 0:
+        Vt[2] *= -1
+        R = np.dot(U, Vt)
     # 计算最后的代价
-    cost = np.linalg.norm(np.dot(source_centered, R) - target_points)
+    cost = np.linalg.norm(np.dot(R, source_centered.T) - target_points.T)
 
     # 返回结果便于可视化对比
-    re = np.dot(source_centered, R)
+    re = np.dot(R, source_centered.T).T
 
     return re, source_mean, R, cost
 
@@ -94,3 +97,18 @@ def FittingCircle(points):
     # 半径为 r
     r = np.sqrt(params[3] + x0 ** 2 + y0 ** 2 + z0 ** 2)
     return center, r
+
+
+def Points3Fitting(points):
+    A, B, C = points
+    a = np.linalg.norm(C - B)
+    b = np.linalg.norm(C - A)
+    c = np.linalg.norm(B - A)
+    s = (a + b + c) / 2
+    radius = a * b * c / (4 * np.sqrt(s * (s - a) * (s - b) * (s - c)))
+    b1 = a ** 2 * (b ** 2 + c ** 2 - a ** 2)
+    b2 = b ** 2 * (a ** 2 + c ** 2 - b ** 2)
+    b3 = c ** 2 * (a ** 2 + b ** 2 - c ** 2)
+    barcyntric = np.array([b1, b2, b3])
+    center = np.dot(points.T, barcyntric) / np.sum(barcyntric)
+    return radius, center

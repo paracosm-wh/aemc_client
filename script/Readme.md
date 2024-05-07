@@ -14,3 +14,8 @@ $J(\mathbf{R})=\frac{1}{2}\sum_{k=1}^{N}a_{k}\|\mathbf{w}_{k}-\mathbf{R}\mathbf{
 - $\mathbf{B}=\sum_{i=1}^na_i\mathbf{w}_i\mathbf{v}_i{}^T$
 - 对$mathbf{B}$ 进行SVD分解：$B=USV^T$
 - 旋转矩阵：$\mathbf{R}=UMV^T$ ，$M=diag(1,1,det(U)det(V))$
+
+### 2.4 CPD算法
+#### 2.4.2 安装使用说明
+- 安装cpd包：使用源安装，版本为2.0.2 
+- 

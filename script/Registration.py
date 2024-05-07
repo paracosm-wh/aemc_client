@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from functools import partial
 from pycpd import RigidRegistration
+from itertools import combinations
 import math
 import csv
 
@@ -116,8 +117,10 @@ def visualize(X, Y, ax):
         Visualize the registration process for cpd.
     """
     plt.cla()
-    ax.scatter(X[:, 0], X[:, 1], X[:, 2], color='red', label='Target')
-    ax.scatter(Y[:, 0], Y[:, 1], Y[:, 2], color='blue', label='Source')
+    # ax.scatter(X[:, 0], X[:, 1], X[:, 2], color='red', label='Target')
+    # ax.scatter(Y[:, 0], Y[:, 1], Y[:, 2], color='blue', label='Source')
+    ax.scatter(X[:, 0], X[:, 1], color='red', label='Target')
+    ax.scatter(Y[:, 0], Y[:, 1], color='blue', label='Source')
     # ax.scatter(X[:, 0], X[:, 1], color='red', label='Target')
     # ax.scatter(Y[:, 0], Y[:, 1], color='blue', label='Source')
     # ax.text2D(0.87, 0.92, 'Iteration: {:d}\nQ: {:06.4f}'.format(
@@ -166,12 +169,22 @@ if __name__ == '__main__':
             # cpd registration
             print(frame_id)
             for cluster in frame_data.PotentialCluster:
+
+                # # 从PotentialCluster中任取3个作为一个cluster
+                # three_cluster = list(combinations(cluster, 3))
+                # for cluster in three_cluster:
+                #     cluster = np.array(cluster)
+                #     r_, c_ = Points3Fitting(cluster)
+                #     c_1, r_1 = FittingCircle(cluster)
+                #     print(len(three_cluster), ",,", "拟合圆心:", c_, "拟合半径:", r_, "二乘法拟合圆心:", c_1,
+                #           "二乘法拟合半径:", r_1)
                 cluster = np.array(cluster)
-                cost = - np.inf
+                cost = np.inf
                 reg_result = np.zeros((0, 3))
                 best_index = 0
                 fig = plt.figure()
-                ax = fig.add_subplot(111, projection='3d')
+                # ax = fig.add_subplot(111, projection='3d')
+                ax = fig.add_subplot(111)
                 for i in range(len(templates)):
                     # ---------for cpd registration---------
                     '''
@@ -218,9 +231,9 @@ if __name__ == '__main__':
                 # 保存结果
                 # 保存拟合的圆心到result
                 print('Best index:', best_index)
-                C, r = FittingCircle(cluster)
-                print(C.flatten(), '\n')
+                # C, r = FittingCircle(cluster)
+                # print(C.flatten(), '\n')
                 # 根据所匹配的最佳模板的索引，将结果保存到最后一行的特定的列
-                result.loc[-1, (3 * best_index + 1):(3 * best_index + 4)] = C.flatten()
+                result.loc[-1, (3 * best_index + 1):(3 * best_index + 4)] = source_mean.flatten()
                 visualize(templates[best_index], reg_result, ax)
-    result.to_csv(r"\1-L-middle1-result.csv", index=False)
+    result.to_csv(r"./1-L-middle1-result.csv", index=False)
